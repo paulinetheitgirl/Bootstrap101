@@ -10,3 +10,4 @@ Examples to familiarize you with the Bootstrap grid system and styles. These ref
 Goal: Using only Bootstrap classes, modify exercise.html so that at 992px or wider, the page looks like:
 ![](https://github.com/paulinetheitgirl/Bootstrap101/blob/master/Project1/img/bootstrapping1.PNG)
 and at lower tha 992px:
+![](https://github.com/paulinetheitgirl/Bootstrap101/blob/master/Project1/img/bootstrapping2.PNG)
