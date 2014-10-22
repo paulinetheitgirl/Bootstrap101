@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Apps</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<style type="text/css">
+	</style>
+</head>
+<body data-ng-app="AppManager" data-ng-controller="AppManagerCtrl">
+<div><h1>Installed apps for: &lt; Type &gt;</h1></div>
+<div><button type="button" class="btn btn-default" data-ng-click="openAppSearchModal()">Add apps!</button></div>
+<div id="appSearchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+		<div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Add apps</h4>
+      </div>
+	  <div class="modal-body">
+		  <form class="form-inline">
+		  <label>Source:</label>
+		  <select class="form-control" data-ng-model="appSource" data-ng-change="findApps()">
+				<option>Select</option>
+			  <option>iTunes</option>
+			  <option>Google Play</option>
+			  <option>Windows Store</option>
+			</select>
+		  </form>
+		  <div id="searchResultsDiv">
+			<p>Found {{searchResults.length}} apps</p>
+			<table class="table">
+				<tr>
+					<th>Name</th>
+					<th>Publisher</th>
+					<th>Version</th>
+					<th>Details</th>
+				</tr>				
+				<tr ng-repeat="result in searchResults">
+					<td>
+						<object type="image/svg+xml" data="phone-icon.svg">Your browser does not support SVG</object>
+						{{result.name}}
+					</td>
+					<td>
+						{{result.publisher}}
+					</td>
+					<td>
+						{{result.version}}
+					</td>
+					<td>
+						<a href="{{result.name}}">View</a>
+					</td>
+				</tr>
+			</table>
+		  </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+	<div class="row">
+		<div class="col-md-10">
+			<table class="table">
+				<tr>
+					<th>Name</th>
+					<th>Publisher</th>
+					<th>Version</th>
+					<th>Details</th>
+					<th>Actions</th>
+				</tr>
+				<tr>
+					<td>
+						<object type="image/svg+xml" data="phone-icon.svg">Your browser does not support SVG</object>
+						Facebook
+					</td>
+					<td>
+						Facebook Inc.
+					</td>
+					<td>
+						1.01
+					</td>
+					<td>
+						<a href="https://itunes.apple.com/au/app/facebook/id284882215?mt=8">Go to iTunes</a>
+					</td>
+					<td>
+						<button type="button" class="btn btn-default">Disable</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<object type="image/svg+xml" data="phone-icon.svg">Your browser does not support SVG</object>
+						Candy Crush
+					</td>
+					<td>
+						Google Inc.
+					</td>
+					<td>
+						Beta
+					</td>
+					<td>
+						<a href="https://play.google.com/store/apps/details?id=com.king.candycrushsaga&hl=en">Go to Google Play</a>
+					</td>
+					<td>
+						<button type="button" class="btn btn-default">Disable</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<object type="image/svg+xml" data="phone-icon.svg">Your browser does not support SVG</object>
+						Internal app
+					</td>
+					<td>
+						Your company
+					</td>
+					<td>
+						99
+					</td>
+					<td>
+						No info
+					</td>
+					<td>
+						<button type="button" class="btn btn-default">Disable</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="rightDiv" class="col-md-2">
+			<a href="page1.html">Back to Device Groups</a>
+		</div>
+	</div>	
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.0/jquery.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js"></script>
+<script type="text/javascript">
+angular
+	.module('AppManager', [])
+	.controller('AppManagerCtrl', function($scope, appSearchService) {
+		$scope.appSource = "Select";
+		$scope.searchResults = [];
+		$scope.openAppSearchModal = function(){
+			$('#appSearchModal').modal('show');
+		};
+		$scope.findApps = function(){
+			if($scope.appSource == "Select") {
+				$scope.searchResults = [];
+			}
+			else {
+				appSearchService
+					.searchForAppsIn($scope.appSource)
+					.then(
+						function (data) {
+							$scope.searchResults = data;
+						}, 
+						function (reason) {
+							alert('Failed: ' + reason);
+						}
+					);
+			}
+		};
+	})
+	.service('appSearchService', ['$http', function($http, $q) {
+		this.searchForAppsIn =  function(storeName) {
+			var request = $http.jsonp(
+				"https://itunes.apple.com/search",
+				{
+					params: {
+						term: "apple",
+						media: "software",
+						limit: "25",
+						callback: "JSON_CALLBACK",
+					}
+				});
+			
+			return( request.then( handleSuccess, handleError ) );
+		};
+		
+		// I transform the error response, unwrapping the application dta from
+		// the API response payload.
+		function handleError( response ) {
+
+			// The API response from the server should be returned in a
+			// nomralized format. However, if the request was not handled by the
+			// server (or what not handles properly - ex. server error), then we
+			// may have to normalize it on our end, as best we can.
+			if (
+				! angular.isObject( response.data ) ||
+				! response.data.message
+				) {
+
+				return( $q.reject( "An unknown error occurred." ) );
+
+			}
+
+			// Otherwise, use expected error message.
+			return( $q.reject( response.data.message ) );
+
+		}
+
+
+		// I transform the successful response, unwrapping the application data
+		// from the API response payload.
+		function handleSuccess( response ) { // different $http API URLs will return different JSON results! For iTunes see https://www.apple.com/itunes/affiliates/resources/documentation/itunes-store-web-service-search-api.html
+			var normalizedResults = []
+			response.data.results.forEach(
+				function(element, index){
+					normalizedResults.push(
+						{
+							"name": element.trackName,
+							"publisher": element.artistName,
+							"version": element.version,
+							"infoURL": element.trackViewUrl
+						}
+					);
+				}
+			);
+			return normalizedResults;
+		}
+  }]);
+</script>
+</body>
+</html>
