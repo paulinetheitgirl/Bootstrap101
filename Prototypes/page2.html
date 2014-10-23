@@ -141,11 +141,12 @@
 <script type="text/javascript">
 angular
 	.module('AppManager', [])
-	.controller('AppManagerCtrl', function($scope, appSearchService) {
+	.value('bootStrapModal', $('#appSearchModal'))
+	.controller('AppManagerCtrl', function($scope, bootStrapModal, appSearchService) {
 		$scope.appSource = "Select";
 		$scope.searchResults = [];
 		$scope.openAppSearchModal = function(){
-			$('#appSearchModal').modal('show');
+			bootStrapModal.modal('show');
 		};
 		$scope.findApps = function(){
 			if($scope.appSource == "Select") {
